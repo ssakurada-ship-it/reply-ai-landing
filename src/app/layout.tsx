@@ -30,19 +30,20 @@ export const metadata: Metadata = {
     "Google レビュー 返信",
     "コールドメール 自動化",
   ],
+  metadataBase: new URL("https://reply-ai-landing.vercel.app"),
   openGraph: {
-    title: "ReplyAI — 口コミ返信・営業メール・契約チェックのAIアシスタント",
+    title: "ReplyAI — AI Review Replies, Cold Emails & Contract Review",
     description:
-      "3つのAIツールを1つのプランで。口コミ返信・営業メール・契約書チェックを自動化します。",
-    url: "https://replyai-labs.vercel.app",
+      "3 AI tools in 1 subscription. Automate review replies, cold email personalization, and contract risk detection. $33/mo.",
+    url: "https://reply-ai-landing.vercel.app",
     siteName: "ReplyAI",
-    locale: "ja_JP",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ReplyAI — 口コミ返信・営業メール・契約チェックのAIアシスタント",
-    description: "3つのAIツールを1つのプランで。毎日の単純作業から解放されます。",
+    title: "ReplyAI — AI Review Replies, Cold Emails & Contract Review",
+    description: "3 AI tools in 1 subscription. Try free, no signup required.",
     site: "@ReplyAI_app",
   },
 };
