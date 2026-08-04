@@ -31,39 +31,37 @@ jobs:
         run: |
           python <<'PY'
           from pathlib import Path
+          import re
 
           path = Path("src/components/HeroA.tsx")
           content = path.read_text(encoding="utf-8")
 
-          replacements = [
-              (
-                  """    if (!currentLine) {
-                    setDone(true);
-                    return;
-                  }""".replace("                  ", ""),
+          if "    if (!currentLine) return;" not in content:
+              content, count = re.subn(
+                  r"    if \(!currentLine\) \{\n      setDone\(true\);\n      return;\n    \}",
                   "    if (!currentLine) return;",
-              ),
-              (
-                  """    if (replyChars >= demo.reply.length) {
-                    setPhase(\"done\");
-                    return;
-                  }
-                  const timer = setTimeout(() => setReplyChars((c) => c + 1), TYPING_SPEED);""".replace("                  ", ""),
-                  """    if (replyChars >= demo.reply.length) return;
-                  const timer = setTimeout(() => {
-                    const next = replyChars + 1;
-                    setReplyChars(next);
-                    if (next >= demo.reply.length) setPhase(\"done\");
-                  }, TYPING_SPEED);""".replace("                  ", ""),
-              ),
-          ]
+                  content,
+                  count=1,
+              )
+              if count != 1:
+                  raise SystemExit("currentLine patch target was not found exactly once")
 
-          for before, after in replacements:
-              if after in content:
-                  continue
-              if before not in content:
-                  raise SystemExit("Expected HeroA patch target was not found")
-              content = content.replace(before, after, 1)
+          reply_after = """    if (replyChars >= demo.reply.length) return;
+          const timer = setTimeout(() => {
+            const next = replyChars + 1;
+            setReplyChars(next);
+            if (next >= demo.reply.length) setPhase(\"done\");
+          }, TYPING_SPEED);""".replace("          ", "")
+
+          if reply_after not in content:
+              content, count = re.subn(
+                  r"    if \(replyChars >= demo\.reply\.length\) \{\n      setPhase\(\"done\"\);\n      return;\n    \}\n    const timer = setTimeout\(\(\) => setReplyChars\(\(c\) => c \+ 1\), TYPING_SPEED\);",
+                  reply_after,
+                  content,
+                  count=1,
+              )
+              if count != 1:
+                  raise SystemExit("reply typing patch target was not found exactly once")
 
           path.write_text(content, encoding="utf-8")
           PY
@@ -139,6 +137,7 @@ jobs:
             package-lock.json
             src/components/HeroA.tsx
           retention-days: 7
+          overwrite: true
 
       - name: Commit verified remediation
         run: |
