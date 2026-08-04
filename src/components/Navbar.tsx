@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { MenuIcon, XIcon } from "lucide-react";
 
@@ -22,10 +23,10 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-1 font-bold text-xl text-slate-900">
+          <Link href="/" className="flex items-center gap-1 font-bold text-xl text-slate-900">
             ReplyAI
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-600 mb-1" />
-          </a>
+          </Link>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8" aria-label="メインメニュー">
