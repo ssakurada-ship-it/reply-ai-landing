@@ -1,0 +1,72 @@
+name: Dependency security fix
+
+on:
+  push:
+    branches:
+      - security/github-hardening-20260804
+    paths:
+      - .github/workflows/dependency-security-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout security branch
+        uses: actions/checkout@v4
+        with:
+          ref: security/github-hardening-20260804
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Upgrade patched framework dependencies
+        run: |
+          npm install --save-exact next@16.2.12 react@19.2.8 react-dom@19.2.8
+          npm install --save-dev --save-exact eslint-config-next@16.2.12
+
+      - name: Verify locked versions
+        run: |
+          node -e "const p=require('./package.json'); const l=require('./package-lock.json'); const expected={next:'16.2.12',react:'19.2.8','react-dom':'19.2.8'}; for (const [name,version] of Object.entries(expected)) { if (p.dependencies[name] !== version) throw new Error(name+' package.json mismatch'); if (l.packages['node_modules/'+name]?.version !== version) throw new Error(name+' lock mismatch'); } if (p.devDependencies['eslint-config-next'] !== '16.2.12') throw new Error('eslint-config-next package.json mismatch'); if (l.packages['node_modules/eslint-config-next']?.version !== '16.2.12') throw new Error('eslint-config-next lock mismatch');"
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Full dependency audit
+        run: npm audit --audit-level=high
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload verified dependency files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-dependency-upgrade
+          path: |
+            package.json
+            package-lock.json
+          retention-days: 7
+
+      - name: Commit verified upgrade
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "No dependency changes to commit"
+            exit 0
+          fi
+          git commit -m "fix(security): upgrade Next.js and React to patched releases"
+          git push origin HEAD:security/github-hardening-20260804
