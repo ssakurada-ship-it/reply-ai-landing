@@ -46,13 +46,34 @@ jobs:
               if count != 1:
                   raise SystemExit("currentLine patch target was not found exactly once")
 
-          reply_after = """    if (replyChars >= demo.reply.length) return;
-          const timer = setTimeout(() => {
-            const next = replyChars + 1;
-            setReplyChars(next);
-            if (next >= demo.reply.length) setPhase(\"done\");
-          }, TYPING_SPEED);""".replace("          ", "")
+          last_after = (
+              "    if (isLast) {\n"
+              "      const doneTimer = setTimeout(() => setDone(true), 0);\n"
+              "      const underlineTimer = setTimeout(() => setShowUnderline(true), 200);\n"
+              "      return () => {\n"
+              "        clearTimeout(doneTimer);\n"
+              "        clearTimeout(underlineTimer);\n"
+              "      };\n"
+              "    }"
+          )
+          if last_after not in content:
+              content, count = re.subn(
+                  r"    if \(isLast\) \{\n      setDone\(true\);\n      setTimeout\(\(\) => setShowUnderline\(true\), 200\);\n      return;\n    \}",
+                  last_after,
+                  content,
+                  count=1,
+              )
+              if count != 1:
+                  raise SystemExit("last-line patch target was not found exactly once")
 
+          reply_after = (
+              "    if (replyChars >= demo.reply.length) return;\n"
+              "    const timer = setTimeout(() => {\n"
+              "      const next = replyChars + 1;\n"
+              "      setReplyChars(next);\n"
+              "      if (next >= demo.reply.length) setPhase(\"done\");\n"
+              "    }, TYPING_SPEED);"
+          )
           if reply_after not in content:
               content, count = re.subn(
                   r"    if \(replyChars >= demo\.reply\.length\) \{\n      setPhase\(\"done\"\);\n      return;\n    \}\n    const timer = setTimeout\(\(\) => setReplyChars\(\(c\) => c \+ 1\), TYPING_SPEED\);",
