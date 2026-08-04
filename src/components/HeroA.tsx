@@ -104,10 +104,7 @@ function HeroTypewriter() {
     if (done) return;
 
     const currentLine = TITLE_LINES[lineIndex];
-    if (!currentLine) {
-      setDone(true);
-      return;
-    }
+    if (!currentLine) return;
 
     if (charIndex < currentLine.text.length) {
       const timer = setTimeout(() => setCharIndex((c) => c + 1), TITLE_TYPING_SPEED);
@@ -117,9 +114,12 @@ function HeroTypewriter() {
     // Line complete — move to next
     const isLast = lineIndex === TITLE_LINES.length - 1;
     if (isLast) {
-      setDone(true);
-      setTimeout(() => setShowUnderline(true), 200);
-      return;
+      const doneTimer = setTimeout(() => setDone(true), 0);
+      const underlineTimer = setTimeout(() => setShowUnderline(true), 200);
+      return () => {
+        clearTimeout(doneTimer);
+        clearTimeout(underlineTimer);
+      };
     }
 
     const pause = TITLE_LINES[lineIndex + 1]?.accent ? TITLE_ACCENT_PAUSE : TITLE_LINE_PAUSE;
@@ -288,11 +288,12 @@ function BeforeAfterDemo() {
   // Reply typing
   useEffect(() => {
     if (phase !== "typing-reply") return;
-    if (replyChars >= demo.reply.length) {
-      setPhase("done");
-      return;
-    }
-    const timer = setTimeout(() => setReplyChars((c) => c + 1), TYPING_SPEED);
+    if (replyChars >= demo.reply.length) return;
+    const timer = setTimeout(() => {
+      const next = replyChars + 1;
+      setReplyChars(next);
+      if (next >= demo.reply.length) setPhase("done");
+    }, TYPING_SPEED);
     return () => clearTimeout(timer);
   }, [phase, replyChars, demo.reply.length]);
 
