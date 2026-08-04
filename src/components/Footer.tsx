@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { XIcon } from "lucide-react";
 
 const LIVE_URL = "https://replyai-labs.vercel.app";
@@ -43,10 +44,10 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {/* Col 1: Brand */}
           <div className="col-span-2 md:col-span-1 flex flex-col gap-4">
-            <a href="/" className="flex items-center gap-1 font-bold text-xl text-white">
+            <Link href="/" className="flex items-center gap-1 font-bold text-xl text-white">
               ReplyAI
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 mb-1" />
-            </a>
+            </Link>
             <p className="text-sm text-slate-500 leading-relaxed">
               AIで日常業務を自動化。<br />
               口コミ返信・営業メール・契約チェックを1つのプランで。
